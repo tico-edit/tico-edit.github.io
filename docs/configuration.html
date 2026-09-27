@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Configuration files</title>
+    <script type="text/javascript" src="https://shjs.wdlabs.com/sh_main.min.js"></script>
+    <script type="text/javascript" src="https://shjs.wdlabs.com/lang/sh_perl.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://shjs.wdlabs.com/css/sh_acid.css">
+    <link type="text/css" rel="stylesheet" href="https://hatch.wdlabs.com/css/default.css">
+  </head>
+  <body onload="sh_highlightDocument();">
+    <div class="nx-header-flag-1"></div>
+    <div class="nx-header-flag-2"></div>
+    <div class="nx-header-title"><a href="/">🌻</a> Configuration files</div>
+    <p>tico reads up to three configuration files, in this order, each one
+able to override settings from the ones before it:</p>
+
+<ol>
+<li>a system-wide <code>nanorc</code></li>
+<li>a user <code>nanorc</code></li>
+<li><code>~/.ticorc</code>, tico's own config file</li>
+</ol>
+
+<p>Command-line flags are applied last and win over anything in any of
+these files.</p>
+
+<h2>nanorc: the same file nano reads</h2>
+
+<p>tico understands the same file format as GNU nano's <code>nanorc</code>, so an
+existing <code>~/.nanorc</code> mostly works unchanged. The full list of what a
+<code>set</code>/<code>unset</code> line can name is below, in "Configuration items" — you
+shouldn't need nano's own <code>nanorc(5)</code> man page just to configure tico,
+though it's a reasonable deeper reference if you already know it. It
+looks for one system-wide file and one user file:</p>
+
+<ul>
+<li>System-wide: <code>$(sysconfdir)/nanorc</code>, normally <code>/etc/nanorc</code>, matching
+nano's own <code>--sysconfdir</code> build option. A distro packaging tico can
+point this elsewhere at build time, or disable system-wide lookup
+entirely.</li>
+<li>User: the first of <code>$XDG_CONFIG_HOME/nano/nanorc</code>,
+<code>~/.config/nano/nanorc</code>, or <code>~/.nanorc</code> that exists — the same search
+order nano itself uses. Only the first one found is read; the others
+are not merged in.</li>
+</ul>
+
+<p>Both files, if present, are read every time tico starts. <code>set</code>/<code>unset</code>
+lines and <code>bind</code>/<code>unbind</code> lines are applied exactly as nano applies
+them.</p>
+
+<p><code>nanorc</code> also has a <code>syntax</code> block format for defining syntax
+highlighting (<code>syntax</code>, <code>color</code>, <code>icolor</code>, <code>header</code>, <code>magic</code>, <code>include</code>,
+<code>extendsyntax</code>, and the per-syntax <code>formatter</code>/<code>linter</code>/<code>comment</code>/
+<code>tabgives</code> lines). tico parses these — so a real-world nanorc full of
+them still loads without errors — but they have no effect: tico
+highlights with its own built-in, tree-sitter-based language table
+instead of nano's regex engine. See "Syntax highlighting and themes"
+below for how tico actually decides what to highlight and with which
+colors.</p>
+
+<p>Two command-line flags change how nanorc is handled:</p>
+
+<ul>
+<li><code>-f FILE</code> / <code>--rcfile FILE</code> reads only that one file in place of the
+system/user nanorc search (<code>~/.ticorc</code> is still read afterward,
+unless also suppressed).</li>
+<li><code>-I</code> / <code>--ignorercfiles</code> skips all of it — no nanorc, no <code>~/.ticorc</code>.</li>
+</ul>
+
+<h2>Configuration items</h2>
+
+<p>This is every name a <code>set</code>/<code>unset</code> line (in a nanorc) or a bare line
+(in <code>~/.ticorc</code>'s <code>[main]</code>, see below) can use, grouped by what they
+affect. Most take no value — they're plain on/off toggles. A few take
+one, written <code>set name value</code> in a nanorc or <code>name = value</code> in
+<code>~/.ticorc</code>.</p>
+
+<p>A handful are recognized and stored but don't do anything in tico yet
+(no feature has been built for them). Those are marked <strong>(not yet
+implemented)</strong> below — flipping one won't error, it just won't change
+tico's behavior. Everything not marked that way works.</p>
+
+<h3>Editing behavior</h3>
+
+<ul>
+<li><code>afterends</code> — with word-selection movement, stop at the end of a
+word instead of its start. <strong>(not yet implemented)</strong></li>
+<li><code>atblanks</code> — when <code>softwrap</code> is on, prefer to break lines at
+whitespace rather than mid-word. <strong>(not yet implemented)</strong></li>
+<li><code>autoindent</code> — indent a newly created line to match the previous
+line's leading whitespace.</li>
+<li><code>breaklonglines</code> — automatically hard-wrap the current line once it
+grows past the fill column, as you type. <strong>(not yet implemented)</strong></li>
+<li><code>colonparsing</code> — accept a <code>filename:line[,column]</code> suffix on files
+named on the command line, to open straight to that spot. <strong>(not yet
+implemented)</strong></li>
+<li><code>cutfromcursor</code> — cut-line (<code>^K</code>) cuts from the cursor to the end of
+the line, instead of the whole line.</li>
+<li><code>fill N</code> — the target line width for hard-wrap and justify (<code>^J</code>).
+<code>N</code> positive is an absolute column; zero or negative counts back from
+the right edge of the screen (the default, <code>-8</code>, wraps 8 columns in
+from the edge).</li>
+<li><code>magic</code> — when a file's language can't be told from its name, peek at
+its content (via <code>libmagic</code>) to guess one. <strong>(not yet implemented —
+tico's own filename/shebang/modeline/content-peek detection always
+runs regardless of this setting; see "Syntax highlighting and
+themes" below.)</strong></li>
+<li><code>nonewlines</code> — don't silently add a final newline to a file that
+doesn't already end in one when saving. tico's Write Out selection
+write honors this; general saves currently always omit the trailing
+newline regardless of this setting.</li>
+<li><code>nowrap</code> — legacy alias for <code>unset breaklonglines</code>. <strong>(not yet
+implemented — has no effect at all currently, including on
+<code>breaklonglines</code>)</strong></li>
+<li><code>rebinddelete</code> — treat the Delete key as Delete even on terminals
+that report it as Backspace. <strong>(not yet implemented)</strong></li>
+<li><code>smarthome</code> — pressing Home moves to the first non-blank character
+first, then to column 1 on a second press.</li>
+<li><code>softwrap</code> — display an overlong line across multiple screen rows
+instead of scrolling it horizontally. <strong>(not yet implemented)</strong></li>
+<li><code>tabstospaces</code> — convert a typed Tab into the equivalent number of
+spaces.</li>
+<li><code>trimblanks</code> — trim trailing spaces from a line before hard-wrapping
+it during justify.</li>
+<li><code>wordbounds</code> — a more Unix-like definition of a word boundary
+(punctuation counts as its own word) for word-wise cursor movement.
+<strong>(not yet implemented)</strong></li>
+<li><code>wordchars STRING</code> — extra characters (beyond letters and digits)
+that count as part of a word, for word-wise movement. <strong>(not yet
+implemented)</strong></li>
+<li><code>zap</code> — let Backspace/Delete erase a marked selection in one go,
+instead of requiring Cut first. <strong>(not yet implemented)</strong></li>
+</ul>
+
+<h3>Search &amp; replace</h3>
+
+<ul>
+<li><code>casesensitive</code> — make searches and replacements case-sensitive by
+default (still toggleable per-search with <code>M-C</code>).</li>
+<li><code>historylog</code> — save search/replace/execute history to disk between
+sessions, and reload it on startup.</li>
+<li><code>regexp</code> — treat search/replace patterns as regular expressions by
+default (still toggleable per-search with <code>M-R</code>).</li>
+</ul>
+
+<h3>Display</h3>
+
+<ul>
+<li><code>boldtext</code> — use bold text instead of reverse video for emphasis
+throughout the interface. <strong>(not yet implemented)</strong></li>
+<li><code>bookstyle</code> — when justifying, treat any line that starts with
+whitespace as beginning a new paragraph. <strong>(not yet implemented)</strong></li>
+<li><code>constantshow</code> — always show the cursor's line/column position in
+the status area, without waiting for <code>^C</code>. <strong>(not yet implemented)</strong></li>
+<li><code>emptyline</code> — leave the line below the title bar blank instead of
+using it for text. <strong>(not yet implemented)</strong></li>
+<li><code>guidestripe N</code> — draw a vertical guide bar in column <code>N</code>.</li>
+<li><code>indicator</code> — show a position+portion scrollbar-style indicator
+(colored by <code>scrollercolor</code>). <strong>(not yet implemented)</strong></li>
+<li><code>jumpyscrolling</code> — scroll the view a half-screen at a time instead of
+line by line. <strong>(not yet implemented)</strong></li>
+<li><code>linenumbers</code> — show line numbers to the left of the text (colored by
+<code>numbercolor</code>).</li>
+<li><code>matchbrackets STRING</code> — the bracket-character pairs <code>M-]</code>'s
+find-matching-bracket command should recognize. <strong>(not yet
+implemented — <code>M-]</code> itself isn't implemented yet either)</strong></li>
+<li><code>minibar</code> — use a single-line, minimal status bar instead of the
+full title/status bars.</li>
+<li><code>mouse</code> — enable mouse support (clicking to place the cursor,
+scrolling, and so on).</li>
+<li><code>nohelp</code> — don't show the two-line key-reference bar at the bottom.</li>
+<li><code>quickblank</code> — clear a status-bar message on the very next keystroke,
+instead of leaving it up for a second or two.</li>
+<li><code>rawsequences</code> — work around numeric-keypad key-code confusion on
+some terminals. <strong>(not yet implemented)</strong></li>
+<li><code>showcursor</code> — show the terminal cursor in the file browser and help
+text (where tico would otherwise hide it). <strong>(not yet implemented)</strong></li>
+<li><code>stateflags</code> — show file-state indicators (modified, DOS/Mac format,
+etc.) on the title bar. <strong>(not yet implemented)</strong></li>
+<li><code>syntax_highlighting</code> — tico-only, not a nano option: turn tico's own
+syntax highlighting on or off globally (on by default; also
+toggleable at runtime with <code>M-Y</code>). See "Syntax highlighting and
+themes" below.</li>
+<li><code>tabsize N</code> — how many columns a tab character occupies (default
+<code>8</code>).</li>
+<li><code>whitespace "TS"</code> — the two single-column characters
+<code>whitespacedisplay</code> shows in place of a tab and a space,
+respectively (default <code>»</code> and <code>·</code>).</li>
+<li><code>whitespacedisplay</code> — show tabs and spaces using the <code>whitespace</code>
+characters, in the editor and at prompts (<code>M-P</code>).</li>
+<li><code>zero</code> — hide every bar (title, status, help) and use the whole
+terminal for text.</li>
+</ul>
+
+<h3>Files &amp; safety</h3>
+
+<ul>
+<li><code>allow_insecure_backup</code> — make a backup even when its permissions or
+ownership can't be preserved (otherwise unsafe backups are skipped).
+<strong>(not yet implemented)</strong></li>
+<li><code>backup</code> — save a <code>~</code>-suffixed backup of a file's previous contents
+before overwriting it. <strong>(not yet implemented — no backup file is
+ever written yet)</strong></li>
+<li><code>backupdir DIR</code> — write backup files into <code>DIR</code> instead of next to
+the original. <strong>(not yet implemented, for the same reason as
+<code>backup</code>)</strong></li>
+<li><code>brackets STRING</code> — closing-bracket-like characters, considered
+alongside <code>punct</code> when justify decides where a sentence ends.</li>
+<li><code>locking</code> — create a vim-style <code>.swp</code> lock file while a buffer is
+open, and honor other editors' lock files.</li>
+<li><code>multibuffer</code> — open each file named on the command line (or read
+with <code>^R</code>) into its own buffer instead of replacing the current one.</li>
+<li><code>noconvert</code> — don't convert a DOS/Mac-format file's line endings on
+read, or convert back on write; keep the bytes as-is.</li>
+<li><code>operatingdir DIR</code> — restrict file operations to this directory (and
+its subdirectories). <strong>(not yet implemented)</strong></li>
+<li><code>positionlog</code> — remember the cursor position in each file you edit,
+and restore it the next time you open that file. <strong>(not yet
+implemented — no position log is kept yet)</strong></li>
+<li><code>preserve</code> — let the terminal's XON/XOFF flow control (<code>^Q</code>/<code>^S</code>)
+through instead of tico intercepting them. <strong>(not yet implemented)</strong></li>
+<li><code>punct STRING</code> — characters that count as sentence-ending
+punctuation for justify (default <code>!.?</code>), consulted together with
+<code>brackets</code>.</li>
+<li><code>quotestr REGEX</code> — the regular expression that identifies a quoted
+line's prefix (e.g. <code>&gt;</code>) when justifying quoted text.</li>
+<li><code>restricted</code> — restricted mode: disable most file-system-affecting
+features (see nano's own documentation for the exact restriction
+list, which tico mirrors). <strong>(not yet implemented)</strong></li>
+<li><code>saveonexit</code> — save changes on exit without asking.</li>
+<li><code>speller PROGRAM</code> — use <code>PROGRAM</code> as the spell checker (<code>^T</code>) instead
+of the built-in one.</li>
+<li><code>unix</code> — save a new file in Unix format by default, regardless of
+what format it was read in.</li>
+</ul>
+
+<h3>Colors</h3>
+
+<p>Twelve options each set the color of one piece of the interface. All
+share the same value syntax: <code>[bold,][italic,]fgcolor[,bgcolor]</code> — one
+or two color names (or hex, <code>#rgb</code>), optionally preceded by <code>bold</code>
+and/or <code>italic</code>. Color names are the eight ANSI names (<code>black</code>, <code>red</code>,
+<code>green</code>, <code>yellow</code>, <code>blue</code>, <code>magenta</code>, <code>cyan</code>, <code>white</code>), each optionally
+prefixed <code>light</code> for the bright variant, plus <code>normal</code> for the
+terminal's default, and — on a terminal with at least 256 colors — a
+set of named hues (<code>pink</code>, <code>purple</code>, <code>mauve</code>, <code>lagoon</code>, <code>mint</code>, <code>lime</code>,
+<code>peach</code>, <code>orange</code>, <code>latte</code>, <code>rosy</code>, <code>beet</code>, <code>plum</code>, <code>sea</code>, <code>sky</code>,
+<code>slate</code>, <code>teal</code>, <code>sage</code>, <code>brown</code>, <code>ocher</code>, <code>sand</code>, <code>tawny</code>, <code>brick</code>,
+<code>crimson</code>). Example: <code>set titlecolor bold,white,blue</code>.</p>
+
+<ul>
+<li><code>errorcolor</code> — error messages in the status area. Defaults to bold
+white on red.</li>
+<li><code>functioncolor</code> — a key's description in the help/key-reference bars
+(the part next to the key itself). Unstyled (plain) by default.</li>
+<li><code>keycolor</code> — a key combo's name in the help/key-reference bars.
+Reverse video by default.</li>
+<li><code>minicolor</code> — the single-line bar used by <code>minibar</code>. Falls back to
+<code>titlecolor</code>'s colors (like <code>promptcolor</code>) when unset.</li>
+<li><code>numbercolor</code> — line numbers (<code>linenumbers</code>). Reverse video by
+default.</li>
+<li><code>promptcolor</code> — the prompt bar shown while typing a search, filename,
+etc. Falls back to <code>titlecolor</code>'s colors when unset.</li>
+<li><code>scrollercolor</code> — the position+portion indicator (<code>indicator</code>). Its
+track is unstyled by default; the thumb is always additionally
+reverse-video.</li>
+<li><code>selectedcolor</code> — selected (marked) text. Reverse video by default.</li>
+<li><code>spotlightcolor</code> — the current search match. Defaults to black on
+light yellow.</li>
+<li><code>statuscolor</code> — ordinary (non-error) status-bar messages.</li>
+<li><code>stripecolor</code> — the vertical guide bar (<code>guidestripe</code>). Reverse video
+by default.</li>
+<li><code>titlecolor</code> — the title bar. Reverse video by default; every other
+bar's default styling is ultimately derived from this one.</li>
+</ul>
+
+<h2><code>~/.ticorc</code>: tico's own config file</h2>
+
+<p>tico adds one more file with no nano equivalent: <code>~/.ticorc</code> (or
+<code>$XDG_CONFIG_HOME/tico/ticorc</code>, if that already exists). Its settings
+take precedence over anything set in a nanorc. It's an INI-style file
+with up to four sections.</p>
+
+<h3><code>[main]</code></h3>
+
+<p>The same options as "Configuration items" above, just written without
+the leading <code>set</code>/<code>unset</code> keyword — a bare <code>optionname</code> (or
+<code>optionname = value</code>) turns it on, and <code>unset optionname</code> turns it off:</p>
+
+<p><pre class="sh_ini">[main]
+linenumbers
+tabstospaces
+tabsize = 4
+unset mouse
+</pre></p>
+
+<h3><code>[keybindings]</code></h3>
+
+<p>Rebinds keys without nano's <code>bind</code>/<code>unbind</code> syntax. Each line is
+<code>[menu.]key = function</code>; <code>menu</code> defaults to <code>main</code> if omitted. A
+quoted value binds the key to that literal string (a macro) instead of
+a named function. <code>key = unbind</code> (or <code>= none</code>) removes a binding.</p>
+
+<p><pre class="sh_ini">[keybindings]
+^G = help
+search.^Y = older
+^D = "some literal text"
+^K = unbind
+</pre></p>
+
+<h3><code>[syntax]</code></h3>
+
+<p>Picks which color theme tico's syntax highlighter uses — nothing to do
+with nanorc's <code>color</code>/<code>icolor</code> directives, which tico ignores (see
+"Syntax highlighting and themes" below). <code>theme = NAME</code> sets the
+theme for every language; <code>LANGUAGE.theme = NAME</code> overrides it for one
+language only (language names as listed by <code>--listsyntaxes</code>):</p>
+
+<p><pre class="sh_ini">[syntax]
+theme = tico-builtin-gruvbox
+perl.theme = tico-builtin-nord
+fortran.theme = "~/my-themes/retro.toml"
+</pre></p>
+
+<h3><code>[tico]</code></h3>
+
+<p>Settings with no nano equivalent at all. Currently just one:</p>
+
+<ul>
+<li><code>max_syntax_highlight_size</code> — files larger than this are opened
+without syntax highlighting (to keep large files fast). Accepts a
+plain byte count or a <code>KB</code>/<code>MB</code>/<code>GB</code>-suffixed size, e.g.
+<code>max_syntax_highlight_size = 8MB</code>.</li>
+</ul>
+
+<p><pre class="sh_ini">[tico]
+max_syntax_highlight_size = 8MB
+</pre></p>
+
+<h2>Syntax highlighting and themes</h2>
+
+<p>This is the one area where tico deliberately does not behave like
+nano. nano highlights by matching regular expressions defined in
+nanorc <code>syntax</code>/<code>color</code>/<code>icolor</code> blocks. tico instead ships its own
+built-in table of languages, each backed by a tree-sitter grammar, and
+detects a buffer's language from its filename, shebang, or a modeline
+— not from anything in a nanorc. There is currently no way to add
+highlighting for a language tico doesn't already know, short of adding
+a grammar to tico itself.</p>
+
+<p>Colors, however, are configurable: they come from a theme file in
+<a href="https://helix-editor.com/">Helix</a>'s theme format — plain TOML, keyed
+by scope names like <code>keyword.control.import</code> or <code>constant.numeric</code>.
+Only a theme's syntax-scope entries are used; a theme's <code>ui.*</code> entries
+(for things like the status bar or selection color) are ignored, since
+those follow nano's own <code>set titlecolor</code> and similar options instead.</p>
+
+<p>tico has nine themes built in (its own 16-color default, plus eight
+vendored from Helix), all named with a <code>tico-builtin-</code> prefix. Any
+other name is looked up on disk, in order:</p>
+
+<ol>
+<li><code>$XDG_CONFIG_HOME/tico/themes/</code> (normally <code>~/.config/tico/themes/</code>)</li>
+<li><code>$XDG_CONFIG_HOME/helix/themes/</code> (or <code>HELIX_RUNTIME/themes</code>, if set)</li>
+<li>wherever an installed Helix keeps its ~70 bundled themes
+(<code>/usr/share/helix/runtime/themes</code> and similar system paths)</li>
+</ol>
+
+<p>so any theme already installed for Helix works for tico too, unmodified.</p>
+
+<p>The theme is chosen with <code>[syntax]</code>'s <code>theme</code>/<code>LANGUAGE.theme</code> in
+<code>~/.ticorc</code> (above), or overridden from the command line with
+<code>--tico-theme NAME</code> (global) or <code>--tico-theme LANGUAGE.NAME</code> (one
+language only) — either flag can be repeated. <code>--tico-list-themes</code>
+prints every built-in and on-disk theme it can find, along with a
+summary of which theme applies to what in the current configuration.</p>
+
+<h2>Precedence, summarized</h2>
+
+<p>Later wins over earlier:</p>
+
+<ol>
+<li>system nanorc</li>
+<li>user nanorc (<code>~/.nanorc</code> or equivalent — <code>-f</code>/<code>--rcfile</code> replaces
+both of the above with a single named file)</li>
+<li><code>~/.ticorc</code></li>
+<li>command-line flags</li>
+</ol>
+
+<p><code>-I</code>/<code>--ignorercfiles</code> skips 1–3 entirely and runs on defaults plus
+whatever's on the command line.</p>
+
+
+    <div class="nx-footer">
+      <p>
+        [
+            <a href="https://www.wdlabs.com">www.wdlabs.com</a> |
+            <a href="https://alienfile.org">alienfile.org</a> |
+            <a href="https://pl.atypus.org">pl.atypus.org</a> |
+            <a href="https://perlwasm.github.io">perlwasm</a> |
+            <a href="https://uperl.github.io">uperl</a>
+        ]
+        Copyright &copy; 2022 Graham Ollis
+      </p>
+    </div>
+  </body>
+</html>
