@@ -329,9 +329,27 @@ Only a theme's syntax-scope entries are used; a theme's `ui.*` entries
 (for things like the status bar or selection color) are ignored, since
 those follow nano's own `set titlecolor` and similar options instead.
 
-tico has nine themes built in (its own 16-color default, plus eight
-vendored from Helix), all named with a `tico-builtin-` prefix. Any
-other name is looked up on disk, in order:
+tico has nine themes built in, all named with a `tico-builtin-` prefix
+(reserved: a name starting with it is never looked for on disk, so it
+can't be shadowed by a same-named file elsewhere):
+
+- `tico-builtin-default` — tico's own 16-color theme, with no
+  backgrounds, taking its colors from the terminal's palette. The
+  right choice on a terminal that doesn't support truecolor.
+- `tico-builtin-gruvbox` — warm, retro, earthy dark.
+- `tico-builtin-catppuccin_mocha` — soft pastel dark.
+- `tico-builtin-dracula` — purple/pink, high-saturation dark.
+- `tico-builtin-nord` — cool, muted "arctic" blue dark.
+- `tico-builtin-tokyonight` — deep night-blue with violet accents.
+- `tico-builtin-onedark` — the classic Atom "One Dark".
+- `tico-builtin-monokai` — high-contrast green/yellow/pink (Sublime's
+  classic).
+- `tico-builtin-solarized_light` — the one light-background theme.
+
+All eight non-default themes are vendored unmodified from Helix and use
+truecolor (`#rrggbb`), so they need a terminal that supports it.
+
+Any other name is looked up on disk, in order:
 
 1. `$XDG_CONFIG_HOME/tico/themes/` (normally `~/.config/tico/themes/`)
 2. `$XDG_CONFIG_HOME/helix/themes/` (or `HELIX_RUNTIME/themes`, if set)

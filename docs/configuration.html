@@ -355,9 +355,29 @@ Only a theme's syntax-scope entries are used; a theme's <code>ui.*</code> entrie
 (for things like the status bar or selection color) are ignored, since
 those follow nano's own <code>set titlecolor</code> and similar options instead.</p>
 
-<p>tico has nine themes built in (its own 16-color default, plus eight
-vendored from Helix), all named with a <code>tico-builtin-</code> prefix. Any
-other name is looked up on disk, in order:</p>
+<p>tico has nine themes built in, all named with a <code>tico-builtin-</code> prefix
+(reserved: a name starting with it is never looked for on disk, so it
+can't be shadowed by a same-named file elsewhere):</p>
+
+<ul>
+<li><code>tico-builtin-default</code> — tico's own 16-color theme, with no
+backgrounds, taking its colors from the terminal's palette. The
+right choice on a terminal that doesn't support truecolor.</li>
+<li><code>tico-builtin-gruvbox</code> — warm, retro, earthy dark.</li>
+<li><code>tico-builtin-catppuccin_mocha</code> — soft pastel dark.</li>
+<li><code>tico-builtin-dracula</code> — purple/pink, high-saturation dark.</li>
+<li><code>tico-builtin-nord</code> — cool, muted "arctic" blue dark.</li>
+<li><code>tico-builtin-tokyonight</code> — deep night-blue with violet accents.</li>
+<li><code>tico-builtin-onedark</code> — the classic Atom "One Dark".</li>
+<li><code>tico-builtin-monokai</code> — high-contrast green/yellow/pink (Sublime's
+classic).</li>
+<li><code>tico-builtin-solarized_light</code> — the one light-background theme.</li>
+</ul>
+
+<p>All eight non-default themes are vendored unmodified from Helix and use
+truecolor (<code>#rrggbb</code>), so they need a terminal that supports it.</p>
+
+<p>Any other name is looked up on disk, in order:</p>
 
 <ol>
 <li><code>$XDG_CONFIG_HOME/tico/themes/</code> (normally <code>~/.config/tico/themes/</code>)</li>
