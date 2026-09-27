@@ -349,6 +349,50 @@ can't be shadowed by a same-named file elsewhere):
 All eight non-default themes are vendored unmodified from Helix and use
 truecolor (`#rrggbb`), so they need a terminal that supports it.
 
+### Screenshots
+
+Each built-in theme, highlighting the same sample of Rust code, with
+tico's default title bar and two-line help footer. Note
+`tico-builtin-solarized_light`'s colors are calibrated for a light
+background, but tico takes the background itself from the terminal —
+that's the `ui.*`-is-ignored rule above in practice.
+
+**`tico-builtin-default`**
+
+![tico-builtin-default theme highlighting a sample of Rust code](images/themes/tico-builtin-default.png)
+
+**`tico-builtin-gruvbox`**
+
+![tico-builtin-gruvbox theme highlighting a sample of Rust code](images/themes/tico-builtin-gruvbox.png)
+
+**`tico-builtin-catppuccin_mocha`**
+
+![tico-builtin-catppuccin_mocha theme highlighting a sample of Rust code](images/themes/tico-builtin-catppuccin_mocha.png)
+
+**`tico-builtin-dracula`**
+
+![tico-builtin-dracula theme highlighting a sample of Rust code](images/themes/tico-builtin-dracula.png)
+
+**`tico-builtin-nord`**
+
+![tico-builtin-nord theme highlighting a sample of Rust code](images/themes/tico-builtin-nord.png)
+
+**`tico-builtin-tokyonight`**
+
+![tico-builtin-tokyonight theme highlighting a sample of Rust code](images/themes/tico-builtin-tokyonight.png)
+
+**`tico-builtin-onedark`**
+
+![tico-builtin-onedark theme highlighting a sample of Rust code](images/themes/tico-builtin-onedark.png)
+
+**`tico-builtin-monokai`**
+
+![tico-builtin-monokai theme highlighting a sample of Rust code](images/themes/tico-builtin-monokai.png)
+
+**`tico-builtin-solarized_light`**
+
+![tico-builtin-solarized_light theme highlighting a sample of Rust code](images/themes/tico-builtin-solarized_light.png)
+
 Any other name is looked up on disk, in order:
 
 1. `$XDG_CONFIG_HOME/tico/themes/` (normally `~/.config/tico/themes/`)
