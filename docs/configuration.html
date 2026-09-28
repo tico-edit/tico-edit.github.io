@@ -173,8 +173,11 @@ scrolling, and so on).</li>
 instead of leaving it up for a second or two.</li>
 <li><code>rawsequences</code> — work around numeric-keypad key-code confusion on
 some terminals. <strong>(not yet implemented)</strong></li>
-<li><code>showcursor</code> — show the terminal cursor in the file browser and help
-text (where tico would otherwise hide it). <strong>(not yet implemented)</strong></li>
+<li><code>showcursor</code> — show the terminal cursor in the file browser (on the
+selected name) and in help text, where tico would otherwise hide it.
+In help text the arrow keys then move the cursor through the text,
+scrolling only when it reaches the edge, instead of scrolling the
+view line by line.</li>
 <li><code>stateflags</code> — show file-state indicators (modified, DOS/Mac format,
 etc.) on the title bar. <strong>(not yet implemented)</strong></li>
 <li><code>syntax_highlighting</code> — tico-only, not a nano option: turn tico's own
@@ -264,7 +267,8 @@ etc. Falls back to <code>titlecolor</code>'s colors when unset.</li>
 <li><code>scrollercolor</code> — the position+portion indicator (<code>indicator</code>). Its
 track is unstyled by default; the thumb is always additionally
 reverse-video.</li>
-<li><code>selectedcolor</code> — selected (marked) text. Reverse video by default.</li>
+<li><code>selectedcolor</code> — selected (marked) text, and the selected name in
+the file browser. Reverse video by default.</li>
 <li><code>spotlightcolor</code> — the current search match. Defaults to black on
 light yellow.</li>
 <li><code>statuscolor</code> — ordinary (non-error) status-bar messages.</li>

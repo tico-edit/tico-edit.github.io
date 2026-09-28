@@ -150,8 +150,11 @@ tico's behavior. Everything not marked that way works.
   instead of leaving it up for a second or two.
 - `rawsequences` — work around numeric-keypad key-code confusion on
   some terminals. **(not yet implemented)**
-- `showcursor` — show the terminal cursor in the file browser and help
-  text (where tico would otherwise hide it). **(not yet implemented)**
+- `showcursor` — show the terminal cursor in the file browser (on the
+  selected name) and in help text, where tico would otherwise hide it.
+  In help text the arrow keys then move the cursor through the text,
+  scrolling only when it reaches the edge, instead of scrolling the
+  view line by line.
 - `stateflags` — show file-state indicators (modified, DOS/Mac format,
   etc.) on the title bar. **(not yet implemented)**
 - `syntax_highlighting` — tico-only, not a nano option: turn tico's own
@@ -237,7 +240,8 @@ set of named hues (`pink`, `purple`, `mauve`, `lagoon`, `mint`, `lime`,
 - `scrollercolor` — the position+portion indicator (`indicator`). Its
   track is unstyled by default; the thumb is always additionally
   reverse-video.
-- `selectedcolor` — selected (marked) text. Reverse video by default.
+- `selectedcolor` — selected (marked) text, and the selected name in
+  the file browser. Reverse video by default.
 - `spotlightcolor` — the current search match. Defaults to black on
   light yellow.
 - `statuscolor` — ordinary (non-error) status-bar messages.
