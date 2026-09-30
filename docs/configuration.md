@@ -86,10 +86,12 @@ tico's behavior. Everything not marked that way works.
   tico's own filename/shebang/modeline/content-peek detection always
   runs regardless of this setting; see "Syntax highlighting and
   themes" below.)**
-- `nonewlines` — don't silently add a final newline to a file that
-  doesn't already end in one when saving. tico's Write Out selection
-  write honors this; general saves currently always omit the trailing
-  newline regardless of this setting.
+- `nonewlines` — don't keep an empty line below the text. Normally
+  the buffer always ends with an empty line (the cursor can move down
+  onto it, and typing there adds a fresh one below), so a saved file
+  always ends with a newline, even one that was read without one. With
+  this set, the text ends wherever it ends, and a file without a final
+  newline is saved that way.
 - `nowrap` — legacy alias for `unset breaklonglines`. **(not yet
   implemented — has no effect at all currently, including on
   `breaklonglines`)**
