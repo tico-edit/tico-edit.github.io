@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This is the source for the tico editor project website, https://tico-edit.github.io.
+This is the source for the tico editor project website, https://ticoedit.org.
 The production site is served by GitHub Pages from the `docs/` directory.
 
 ## How the site is built
